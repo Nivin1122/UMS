@@ -34,7 +34,7 @@ export const loginUser = (credentials) => async (dispatch) => {
         const response = await axios.post('http://localhost:8000/api/auth/token/',credentials)
         const { access,refresh } = response.data;
         localStorage.setItem('token',access);
-        localStorage.setItem('refresh', refresh);
+        localStorage.setItem('refresh',refresh);
 
         dispatch(login({ token: access, user: credentials.username, refreshToken: refresh}));
 
@@ -73,6 +73,25 @@ export const refreshToken =()=> async (dispatch)=>{
     } catch (error) {
         console.error('Token refresh failed:', error.response?.data || error.message);
     }
+}
+
+
+export const logoutUser = () => async (dispatch) =>{
+    try {
+        const refreshToken = localStorage.getItem('refresh');
+        if (!refreshToken) {
+            throw new Error("No refresh token found");
+        }
+        await axios.post('http://localhost:8000/api/auth/logout/', { refresh: refreshToken });
+
+        dispatch(logout())
+        alert("Logged out successfully!");
+    }catch (error) {
+        console.error("Logout failed:", error.response?.data || error.message);
+
+        dispatch(logout())
+        alert('Session expired or invalid. Logged out!')
+}
 }
 
 

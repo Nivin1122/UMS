@@ -5,7 +5,8 @@ import axios from 'axios'
 const initialState = {
     token : localStorage.getItem('token') || null,
     user: null,
-    refreshToken: localStorage.getItem('refresh') || null
+    refreshToken: localStorage.getItem('refresh') || null,
+    isAdmin: localStorage.getItem('isAdmin') === 'true' || false
 };
 
 const authSlice = createSlice({
@@ -16,16 +17,41 @@ const authSlice = createSlice({
             state.token = action.payload.token;
             state.user = action.payload.user;
             state.refreshToken = action.payload.refreshToken;
+            state.isAdmin = action.payload.isAdmin || false;
         },
         logout:(state)=>{
             state.token = null;
             state.user = null;
             state.refreshToken = null;
+            state.isAdmin = false;
             localStorage.removeItem('token');
             localStorage.removeItem('refresh');
+            localStorage.removeItem('isAdmin');
         }
     }
 })
+
+
+export const adminLoginUser = (credentials) => async (dispatch) => {
+    try {
+        const response = await axios.post('http://localhost:8000/api/auth/admin-login/', credentials);
+        const { access, refresh, is_admin } = response.data
+
+        dispatch(login({
+            token: access,
+            user: credentials.username,
+            refreshToken: refresh,
+            isAdmin: is_admin,
+        }));
+
+        return { access, isAdmin: is_admin};
+    }catch (error) {
+        console.error(error);
+        throw error;
+}
+}
+
+
 
 export const { login, logout } = authSlice.actions;
 

@@ -11,6 +11,33 @@ from rest_framework.views import APIView
 
 # Create your views here.
 
+class AdminLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+class AdminLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AdminLoginSerializer(data = request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+
+            user = User.objects.filter(username=username,is_superuser=True).first()
+
+            if user and user.check_password(password):
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh' : str(refresh),
+                    'access': str(refresh.access_token),
+                    'is_admin': True
+                })
+
+            return Response({"message": "Invalid admin credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

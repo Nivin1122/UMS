@@ -84,12 +84,18 @@ export const logoutUser = () => async (dispatch) =>{
         }
         await axios.post('http://localhost:8000/api/auth/logout/', { refresh: refreshToken });
 
-        dispatch(logout())
+        dispatch(logout());
+        localStorage.removeItem('token')
+        localStorage.removeItem('refresh')
+
         alert("Logged out successfully!");
     }catch (error) {
         console.error("Logout failed:", error.response?.data || error.message);
 
         dispatch(logout())
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh');
+        
         alert('Session expired or invalid. Logged out!')
 }
 }
